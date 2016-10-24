@@ -3,8 +3,8 @@ MIDIDeviceComponent14BitCC : MIDIDeviceComponent {
 	var loByte, hiByte;
 	var waitingForLoByte = false;
 
-	*new{arg midiIn, midiOut, chan, number, name;
-		^super.new(midiIn, midiOut, chan, number, \control14, name);
+	*new{arg midiIn, midiOut, chan, number, name, controllerName;
+		^super.new(midiIn, midiOut, chan, number, \control14, name, controllerName);
 	}
 
 	prSetupSpec{
@@ -30,7 +30,7 @@ MIDIDeviceComponent14BitCC : MIDIDeviceComponent {
 				var val;
 				val = calculateValue.value(loByte, hiByte);
 				this.valueAction_(val);
-				this.changed(this, \value);
+				this.changed(\value);
 				waitingForLoByte = false;
 				loByte = nil;
 				hiByte = nil;

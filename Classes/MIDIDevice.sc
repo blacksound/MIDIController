@@ -8,17 +8,31 @@ MIDIDevice {
 	}
 
 	init{arg inDeviceName, inPortName, outDeviceName, outPortName, name_;
+		if(MIDIClient.initialized.not, {
+			MIDIClient.init;
+			MIDIIn.connectAll;
+		});
 		midiIn = MIDIIn.findPort(inDeviceName, inPortName);
 		midiOut = MIDIOut.newByName(outDeviceName, outPortName);
 		name = name_;
 		components = ();
 	}
 
+	free{
+
+	}
+
 	setMappings{arg mappingsDict;
 		mappingsDict.keysValuesDo({arg key, mappings;
 			mappings.do{arg mapping, i;
-				var newComp, compName;
-				compName = (key ++ "." ++ (i + 1)).asSymbol;
+				var newComp, compName, number;
+				if(mapping.includesKey(\enum), {
+					number = mapping[\enum];
+				}, {
+					number = i + 1;
+				});
+				compName = (key ++ "." ++ number).asSymbol;
+				// "Making component: %".format(compName).postln;
 				newComp = MIDIDeviceComponent.create(
 					midiIn, midiOut,
 					mapping[\chan],
@@ -30,11 +44,11 @@ MIDIDevice {
 				components.put(compName, newComp);
 			};
 		});
-
 	}
 
 	addComponent{arg compName, chan, number, msgType = \control;
 		var newComp;
+//		"Making new component: %".format([compName, chan, number, msgType]).postln;
 		newComp = MIDIDeviceComponent.create(
 			midiIn, midiOut, chan, number, msgType, compName, name
 		);

@@ -1,7 +1,7 @@
 MIDIDeviceComponent {
 	var <value;
 	var <responder;
-	var <syncFunction;
+	var <>syncFunction;
 	var <chan;
 	var <number;
 	var <spec;
@@ -27,7 +27,7 @@ MIDIDeviceComponent {
 		^super.new.init(midiIn, midiOut, chan, number, msgType, name, controllerName);
 	}
 
-	init{arg midiIn_, midiOut_, chan_, number_, msgType_, name_, controllerName_;
+	init{arg midiIn_, midiOut_, chan_, number_, msgType_, name_, controllerName_, syncFunc_;
 		midiIn = midiIn_;
 		midiOut = midiOut_;
 		chan = chan_;
@@ -36,8 +36,19 @@ MIDIDeviceComponent {
 		name = name_;
 		controllerName = controllerName_;
 		value = 0;
+		syncFunction = syncFunc_;
 		this.prSetupSpec;
 		this.prSetupResponderAndSyncFunc;
+	}
+
+	free{
+		if(traceResponder.notNil, {
+			traceResponder.remove;
+			traceResponder = nil;
+		});
+
+		responder.free;
+		responder.clear;
 	}
 
 	prSetupSpec{
@@ -47,27 +58,29 @@ MIDIDeviceComponent {
 	prSetupResponderAndSyncFunc{
 		responder = MIDIFunc({arg val, num, chan, src;
 			this.valueAction_(val);
-			this.changed(this, \value);
+			this.changed(\value);
 		}, number, chan, msgType, midiIn.uid);
-		syncFunction = switch(msgType,
-			\control, {
-				{arg comp;
-					fork {
-						midiOut.control(chan, number, value);
+		if(syncFunction.isNil, {
+			syncFunction = switch(msgType,
+				\control, {
+					{arg comp;
+						fork {
+							midiOut.control(chan, number, value);
+						};
 					};
-				};
-			},
-			\noteOn, {arg comp;
-				fork {
-					midiOut.noteOn(chan, number, value);
-				};
-			},
-			\noteOff, {arg comp;
-				fork {
-					midiOut.noteOff(chan, number, value);
-				};
-			}
-		);
+				},
+				\noteOn, {arg comp;
+					fork {
+						midiOut.noteOn(chan, number, value);
+					};
+				},
+				\noteOff, {arg comp;
+					fork {
+						midiOut.noteOff(chan, number, value);
+					};
+				}
+			);
+		});
 	}
 
 	value_{arg val;
@@ -85,7 +98,7 @@ MIDIDeviceComponent {
 		this.action.value(this);
 	}
 
-	update{arg theChanged, theChanger, what;
+	update{arg theChanged, what, theChanger;
 		if(theChanger !== this, {
 			var newVal;
 			if(what == \value, {
@@ -104,12 +117,13 @@ MIDIDeviceComponent {
 
 	trace{arg bool = true;
 		if(traceResponder.notNil, {
-			traceResponder.free;
+			traceResponder.remove;
+			traceResponder = nil;
 		});
 		if(bool, {
-			traceResponder =  MIDIFunc({arg val, num, chan, src;
-				"%/% - %".format(controllerName, name, val).postln;
-			}, number, chan, msgType, midiIn.uid);
+			traceResponder = SimpleController.new(this).put(\value, {arg comp;
+				"%/% - %".format(controllerName, name, comp.value).postln;
+			});
 		});
 
 	}
