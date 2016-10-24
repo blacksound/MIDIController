@@ -83,6 +83,10 @@ MIDIDeviceComponent {
 		});
 	}
 
+	valueNormalized{
+		^this.value.linlin(0, 127, 0.0, 1.0);
+	}
+
 	value_{arg val;
 		if(val.isNumber, {
 			value = val.asInteger;

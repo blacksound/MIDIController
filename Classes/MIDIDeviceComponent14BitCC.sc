@@ -48,4 +48,9 @@ MIDIDeviceComponent14BitCC : MIDIDeviceComponent {
 	prCalculateValue{
 		value = loByte + (hiByte << 7);
 	}
+
+	valueNormalized{
+		^this.value.linlin(0, 1023, 0.0, 1.0); //FIXME, this is not really 14 bit, but in most cases its 10bits
+	}
+
 }
