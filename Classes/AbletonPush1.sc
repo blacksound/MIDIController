@@ -2,51 +2,72 @@ AbletonPush1 {
 	var <userDevice;
 	var <liveDevice;
 	var <name;
+	var <buttonNames;
 
 	*new{
-		arg userInputDeviceName = "Ableton Push",
-		userInputPortName = "User Port",
-		userOutputDeviceName = "Ableton Push",
-	       	userOutputPortName = "User Port",
-	       	liveInputDeviceName = "Ableton Push",
-	       	liveInputPortName = "Live Port",
-	       	liveOutputDeviceName = "Ableton Push",
-	       	liveOutputPortName = "Live Port",
-		name = "Push";
+		|
+		userInputDeviceName = ("Ableton Push"),
+		userInputPortName = ("User Port"),
+		userOutputDeviceName = ("Ableton Push"),
+		userOutputPortName = ("User Port"),
+		liveInputDeviceName = ("Ableton Push"),
+		liveInputPortName = ("Live Port"),
+		liveOutputDeviceName = ("Ableton Push"),
+		liveOutputPortName = ("Live Port"),
+		name = "Push1",
+		doReset = true
+		|
 		^super.new.init(
 			userInputDeviceName, userInputPortName,
 			userOutputDeviceName, userOutputPortName,
 			liveInputDeviceName, liveInputPortName,
-			liveOutputDeviceName, liveOutputPortName, name;
+			liveOutputDeviceName, liveOutputPortName, name, doReset
 		);
 	}
 
 	init{
-		arg userInputDeviceName_,
+		|
+		userInputDeviceName_,
 		userInputPortName_,
 		userOutputDeviceName_,
-	       	userOutputPortName_,
-	       	liveInputDeviceName_,
-	       	liveInputPortName_,
-	       	liveOutputDeviceName_,
-	       	liveOutputPortName_,
-		name_;
-
+		userOutputPortName_,
+		liveInputDeviceName_,
+		liveInputPortName_,
+		liveOutputDeviceName_,
+		liveOutputPortName_,
+		name_,
+		doReset = true
+		|
+"Tata: %".format([
+		userInputDeviceName_,
+		userInputPortName_,
+		userOutputDeviceName_,
+		userOutputPortName_,
+		liveInputDeviceName_,
+		liveInputPortName_,
+		liveOutputDeviceName_,
+		liveOutputPortName_,
+		name_,
+		doReset]
+).postln;
 		userDevice = MIDIDevice(
 			userInputDeviceName_, userInputPortName_,
-		       	userOutputDeviceName_, userOutputPortName_,
+			userOutputDeviceName_, userOutputPortName_,
 			name_ ++ "User"
 		);
 		liveDevice = MIDIDevice(
 			liveInputDeviceName_, liveInputPortName_,
-		       	liveOutputDeviceName_, liveOutputPortName_,
+			liveOutputDeviceName_, liveOutputPortName_,
 			name_ ++ "Live"
 		);
 		name = name_;
 		this.prSetupUserPortMappings;
 		this.prSetupComponentLEDMethods;
+		if(doReset, {
+			this.reset;
+		});
 	}
-	
+
 	prSetupUserPortMappings{
 		[
 			(1..8).collect({arg channelNumber, i;
@@ -146,14 +167,15 @@ AbletonPush1 {
 	}
 
 	prSetupComponentLEDMethods{
-		[
+		buttonNames = [
 			\tapTempo, \metronome, \tempoEncoder, \swingEncoder, \masterSelect, \trackStop,
 			\leftArrow, \rightArrow, \upArrow, \downArrow, \select, \shift, \noteMode,
 			\sessionMode, \addDevice, \addTrack, \octaveDown, \octaveUp, \repeat, \accent,
 			\scales, \mute, \solo, \in, \out, \masterEncoder, \play, \record, \new,
 			\duplicate, \automation, \fixedLength, \deviceMode, \browseMode, \trackMode, \clipMode,
 			\volumeMode, \panAndSendMode, \quantize, \double, \delete, \undo
-		].flat.do({arg compName;
+		];
+		buttonNames.flat.do({arg compName;
 			userDevice.components[compName].addUniqueMethod(\setLED, {arg self, val, blinking = \none;
 				var ccVal, ccNum;
 				if(val == \off, {
@@ -172,7 +194,7 @@ AbletonPush1 {
 						if(val == \off, {
 							ccVal = 0;
 						}, {
-							ccVal = (red: 1, amber: 7, yellow: 13, green: 19).at(color) + 
+							ccVal = (red: 1, amber: 7, yellow: 13, green: 19).at(color) +
 							(half: 0, full: 3).at(val) +
 							(none: 0, slow: 1, fast: 2).at(blinking);
 						});
@@ -188,7 +210,7 @@ AbletonPush1 {
 	trace{arg val;
 		userDevice.trace(val);
 	}
-	
+
 	setMode{arg mode;
 		var num = (user: 0, live: 1).at(mode);
 		liveDevice.midiOut.sysex(Int8Array[240, 71, 127, 21, 98, 0, 1, num, 247]);
@@ -211,17 +233,41 @@ AbletonPush1 {
 		liveDevice.midiOut.sysex(val);
 	}
 
+	clearLCD{
+		#[1,2,3,4].do({arg linenum; this.clearLCDLine(linenum);	});
+	}
+
+	clearLEDs{
+		8.do({arg i;
+			8.do({arg j;
+				this.setPadLEDColor(i+1, j+1, Color.black);
+			});
+			this.setSceneLaunchLED(i+1, \off);
+			this.setTrackSelectLED(i+1, \off);
+			this.setTrackStateLEDColor(i+1, \off);
+		});
+		buttonNames.do({| buttonName |
+			this.components[buttonName].setLED(\off);
+		});
+	}
+
+
 	setPadLEDColor{arg row, column, color;
 		var padNumber = (column - 1) + ((row - 1) * 8);
 		var redHi, redLo, greenHi, greenLo, blueHi, blueLo;
-		var bytes = (color.asArray * 255).asInteger;
-		redHi = bytes[0] >> 4;
-		redLo = bytes[0].bitAnd(15);
-		greenHi = bytes[1] >> 4;
-		greenLo = bytes[1].bitAnd(15);
-		blueHi = bytes[2] >> 4;
-		blueLo = bytes[2].bitAnd(15);
-		bytes = [240, 71, 127, 21, 4, 0, 8, padNumber, 0, redHi, redLo, greenHi, greenLo, blueHi, blueLo, 247];
+		var bytes;
+		if(color == \off, {
+			bytes = [240, 71, 127, 21, 4, 0, 8, padNumber, 0, 0, 0, 0, 0, 0, 0, 247];
+		}, {
+			bytes = (color.asArray * 255).asInteger;
+			redHi = bytes[0] >> 4;
+			redLo = bytes[0].bitAnd(15);
+			greenHi = bytes[1] >> 4;
+			greenLo = bytes[1].bitAnd(15);
+			blueHi = bytes[2] >> 4;
+			blueLo = bytes[2].bitAnd(15);
+			bytes = [240, 71, 127, 21, 4, 0, 8, padNumber, 0, redHi, redLo, greenHi, greenLo, blueHi, blueLo, 247];
+		});
 		bytes = bytes.as(Int8Array);
 		userDevice.midiOut.sysex(bytes);
 	}
@@ -240,5 +286,11 @@ AbletonPush1 {
 
 	setTrackSelectLED{arg buttonNumber, val, color, blinking = \none;
 		this.components["trackSelect.%".format(buttonNumber).asSymbol].setLED(val, color, blinking);
+	}
+
+	reset{
+		this.clearLCD;
+		this.clearLEDs;
+
 	}
 }
