@@ -60,6 +60,7 @@ MIDIDeviceComponent {
 			this.valueAction_(val);
 			this.changed(\value);
 		}, number, chan, msgType, midiIn.uid);
+		responder.permanent_(true);
 		if(syncFunction.isNil, {
 			syncFunction = switch(msgType,
 				\control, {
