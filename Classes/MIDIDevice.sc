@@ -19,7 +19,9 @@ MIDIDevice {
 	}
 
 	free{
-
+		components.keysValuesDo({|compKey, comp|
+			comp.free;
+		})
 	}
 
 	setMappings{arg mappingsDict;
