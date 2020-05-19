@@ -34,7 +34,6 @@ MIDIDevice {
 					number = i + 1;
 				});
 				compName = (key ++ "." ++ number).asSymbol;
-				// "Making component: %".format(compName).postln;
 				newComp = MIDIDeviceComponent.create(
 					midiIn, midiOut,
 					mapping[\chan],
@@ -50,7 +49,6 @@ MIDIDevice {
 
 	addComponent{arg compName, chan, number, msgType = \control;
 		var newComp;
-//		"Making new component: %".format([compName, chan, number, msgType]).postln;
 		newComp = MIDIDeviceComponent.create(
 			midiIn, midiOut, chan, number, msgType, compName, name
 		);

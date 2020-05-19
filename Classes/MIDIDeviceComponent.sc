@@ -70,15 +70,19 @@ MIDIDeviceComponent {
 						};
 					};
 				},
-				\noteOn, {arg comp;
-					fork {
-						midiOut.noteOn(chan, number, value);
-					};
+				\noteOn, {
+					{arg comp;
+						fork {
+							midiOut.noteOn(chan, number, value);
+						};
+					}
 				},
-				\noteOff, {arg comp;
-					fork {
-						midiOut.noteOff(chan, number, value);
-					};
+				\noteOff, {
+					{arg comp;
+						fork {
+							midiOut.noteOff(chan, number, value);
+						};
+					}
 				}
 			);
 		});
