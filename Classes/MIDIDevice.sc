@@ -47,10 +47,10 @@ MIDIDevice {
 		});
 	}
 
-	addComponent{arg compName, chan, number, msgType = \control;
+	addComponent{arg compName, chan, number, msgType = \control, argTemplate;
 		var newComp;
 		newComp = MIDIDeviceComponent.create(
-			midiIn, midiOut, chan, number, msgType, compName, name
+			midiIn, midiOut, chan, number, msgType, argTemplate, compName, name
 		);
 		components.put(compName, newComp);
 	}

@@ -11,23 +11,26 @@ MIDIDeviceComponent {
 	var traceResponder;
 	var <controllerName;
 	var <name;
+	var <argTemplate;
 
-	*create{arg midiIn, midiOut, chan, number, msgType, name, controllerName;
+	*create{arg midiIn, midiOut, chan, number, msgType, argTemplate, name, controllerName;
 		var newObj;
 		if(msgType == \control14, {
 			newObj = MIDIDeviceComponent14BitCC.new(
-				midiIn, midiOut, chan, number, name, controllerName);
+				midiIn, midiOut, chan, number, argTemplate, name, controllerName);
 		}, {
-			newObj = this.new(midiIn, midiOut, chan, number, msgType, name, controllerName);
+			newObj = this.new(
+				midiIn, midiOut, chan, number, msgType, argTemplate, name, controllerName
+			);
 		});
 		^newObj;
 	}
 
-	*new{arg midiIn, midiOut, chan, number, msgType = \control, name, controllerName;
-		^super.new.init(midiIn, midiOut, chan, number, msgType, name, controllerName);
+	*new{arg midiIn, midiOut, chan, number, msgType = \control, argTemplate, name, controllerName;
+		^super.new.init(midiIn, midiOut, chan, number, msgType, argTemplate, name, controllerName);
 	}
 
-	init{arg midiIn_, midiOut_, chan_, number_, msgType_, name_, controllerName_, syncFunc_;
+	init{arg midiIn_, midiOut_, chan_, number_, msgType_, argTemplate_, name_, controllerName_, syncFunc_;
 		midiIn = midiIn_;
 		midiOut = midiOut_;
 		chan = chan_;
@@ -37,6 +40,7 @@ MIDIDeviceComponent {
 		controllerName = controllerName_;
 		value = 0;
 		syncFunction = syncFunc_;
+		argTemplate = argTemplate_;
 		this.prSetupSpec;
 		this.prSetupResponderAndSyncFunc;
 	}
@@ -59,7 +63,7 @@ MIDIDeviceComponent {
 		responder = MIDIFunc({arg val, num, chan, src;
 			this.valueAction_(val);
 			this.changed(\value);
-		}, number, chan, msgType, midiIn.uid);
+		}, number, chan, msgType, midiIn.uid, argTemplate: argTemplate);
 		responder.permanent_(true);
 		if(syncFunction.isNil, {
 			syncFunction = switch(msgType,
