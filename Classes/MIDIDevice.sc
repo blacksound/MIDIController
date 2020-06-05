@@ -39,6 +39,7 @@ MIDIDevice {
 					mapping[\chan],
 					mapping[\number],
 					mapping[\msgType] ? \control,
+					mapping[\argTemplate],
 					compName,
 					name
 				);
