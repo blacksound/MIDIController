@@ -14,15 +14,16 @@ MIDIDeviceComponent {
 	var <argTemplate;
 
 	*create{arg midiIn, midiOut, chan, number, msgType, argTemplate, name, controllerName;
-		var newObj;
-		if(msgType == \control14, {
-			newObj = MIDIDeviceComponent14BitCC.new(
-				midiIn, midiOut, chan, number, argTemplate, name, controllerName);
-		}, {
-			newObj = this.new(
-				midiIn, midiOut, chan, number, msgType, argTemplate, name, controllerName
-			);
-		});
+		var newObj, componentClass;
+		componentClass = switch(msgType, 
+			\control14, MIDIDeviceComponent14BitCC,
+			\midinotes, MIDIDeviceNoteComponent,
+			\polytouch, MIDIDevicePolytouchComponent,
+			this
+		);
+		newObj = componentClass.new(
+			midiIn, midiOut, chan, number, msgType, argTemplate, name, controllerName
+		);
 		^newObj;
 	}
 
