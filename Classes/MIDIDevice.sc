@@ -14,6 +14,19 @@ MIDIDevice {
 		});
 		midiIn = MIDIIn.findPort(inDeviceName, inPortName);
 		midiOut = MIDIOut.newByName(outDeviceName, outPortName);
+		if(thisProcess.platform.name == \linux, {
+			var outIndex;
+			outIndex = MIDIClient.destinations.detectIndex({|source|
+				source.uid == midiOut.uid;
+			});
+			if(outIndex.notNil, {
+				midiOut.connect(outIndex);
+			}, {
+				"Could not connect MIDIOut to virtual source: %".format(
+					midiOut
+				).warn;
+			});
+		});
 		name = name_;
 		components = ();
 	}
