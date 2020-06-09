@@ -19,6 +19,7 @@ MIDIDeviceComponent {
 			\control14, MIDIDeviceComponent14BitCC,
 			\midinotes, MIDIDeviceNoteComponent,
 			\polytouch, MIDIDevicePolytouchComponent,
+			\increment, MIDIDeviceIncrementComponent,
 			this
 		);
 		newObj = componentClass.new(

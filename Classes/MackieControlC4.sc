@@ -82,9 +82,17 @@ MackieControlC4 {
 		});
 
 		(0..31).do({arg number, i;
+			var col = (i%8) + 1;
+			var row = "ABCD"[i / 8].asSymbol;
+			var encoderName = "encoder.%/%".format(
+				col, row
+			).asSymbol;
 			midiDevice.addComponent(
-				"encoder.%/%".format((i % 8) + 1, "ABCD"[i / 8] ).asSymbol,
-				0, number);
+				encoderName,
+				0,
+				number,
+				msgType: \increment
+			);
 		})
 	}
 
@@ -115,7 +123,7 @@ MackieControlC4 {
 			32.bitOr((r * 8) + (col - 1)),
 			(showCenter.asInteger << 6) |
 			(modes[mode] << 4) |
-			val.clip(0, 11)
+			val.clip(0, 11).asInteger
 		);
 	}
 
