@@ -48,7 +48,7 @@ MIDIDeviceIncrementComponent : MIDIDeviceComponent {
 	}
 	
 	valueNormalized{
-		^this.value.linlin(0.0, 127.0, 0.0, 1.0);
+		^spec.unmap(this.value);
 	}
 
 	value_{arg val;
