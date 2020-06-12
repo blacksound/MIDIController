@@ -71,20 +71,20 @@ MackieControlC4 {
 			\slotDown -> (number: 18),
 		] ++ (32..63).collect({arg num, i;
 			Association(
-				"encoderButton.%/%".format((i % 8) + 1, "ABCD"[i / 8] ).asSymbol,
+				"encoderButton.%_%".format((i % 8) + 1, "ABCD"[i / 8] ).asSymbol,
 				(number: num)
 			);
 		});
 		mappings.do({|mapping|
 			var data = mapping.value;
-			midiDevice.addComponent("%/press".format(mapping.key).asSymbol, 0, data[\number], \noteOn);
-			midiDevice.addComponent("%/release".format(mapping.key).asSymbol, 0, data[\number], \noteOff);
+			midiDevice.addComponent("%_press".format(mapping.key).asSymbol, 0, data[\number], \noteOn);
+			midiDevice.addComponent("%_release".format(mapping.key).asSymbol, 0, data[\number], \noteOff);
 		});
 
 		(0..31).do({arg number, i;
 			var col = (i%8) + 1;
 			var row = "ABCD"[i / 8].asSymbol;
-			var encoderName = "encoder.%/%".format(
+			var encoderName = "encoder.%_%".format(
 				col, row
 			).asSymbol;
 			midiDevice.addComponent(
