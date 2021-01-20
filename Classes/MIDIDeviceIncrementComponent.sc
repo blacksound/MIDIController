@@ -1,13 +1,15 @@
 MIDIDeviceIncrementComponent : MIDIDeviceComponent {
 	var <>incrementFactor = 1;
-	var internalBitResolution = 10;
+	var <internalBitResolution = 10;
+	var <incrementPowerFactor = 1.3;
+	classvar <defaultBitResolution = 10;
 
 	prSetupResponderAndSyncFunc{
 		responder = MIDIFunc({arg val, num, chan, src;
 			if(val < 64, {
-				this.increment(val);
+				this.increment(pow(val, incrementPowerFactor));
 			}, {
-				this.decrement(val - 64);
+				this.decrement(pow(val - 64, incrementPowerFactor));
 			});
 			this.doAction;
 		}, number, chan, \control, midiIn.uid, argTemplate: argTemplate);
@@ -23,15 +25,15 @@ MIDIDeviceIncrementComponent : MIDIDeviceComponent {
 
 	internalBitResolution_{|val|
 		internalBitResolution = val;
-		this.prSetupSpec;
+		this.spec_(this.class.prMakeSpec(val));
 	}
 
-	prSetupSpec{
-		if(internalBitResolution.notNil, {
-			spec = ControlSpec(0, 2**internalBitResolution);
-		}, {
-			spec = ControlSpec(0, 127);
-		});
+	*prMakeSpec{|bitResolution|
+		^ControlSpec(0, (2**(bitResolution ? this.defaultBitResolution)).asInteger);
+	}
+
+	*prDefaultSpec{
+		^this.prMakeSpec(this.defaultBitResolution);
 	}
 
 	increment{|val|
