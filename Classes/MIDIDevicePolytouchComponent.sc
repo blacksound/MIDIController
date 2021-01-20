@@ -4,13 +4,13 @@ MIDIDevicePolytouchComponent : MIDIDeviceComponent {
 	init{
 		|
 		midiIn_, midiOut_, chan_, number_, msgType_, 
-		argTemplate_, name_, controllerName_, syncFunc_
+		argTemplate_, name_, controllerName_, spec_, syncFunc_
 		|
 
 		touchValues = 0 ! 127;
 		super.init(
 			midiIn_, midiOut_, chan_, number_, msgType_,
-			argTemplate_, name_, controllerName_, syncFunc_
+			argTemplate_, name_, controllerName_, spec_, syncFunc_
 		);
 	}
 

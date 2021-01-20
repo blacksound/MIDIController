@@ -3,12 +3,12 @@ MIDIDeviceComponent14BitCC : MIDIDeviceComponent {
 	var loByte, hiByte;
 	var waitingForLoByte = false;
 
-	*new{arg midiIn, midiOut, chan, number, argTemplate, name, controllerName;
-		^super.new(midiIn, midiOut, chan, number, \control14, argTemplate, name, controllerName);
+	*new{arg midiIn, midiOut, chan, number, msgType, argTemplate, name, controllerName, spec, syncFunction;
+		^super.new(midiIn, midiOut, chan, number, \control14, argTemplate, name, controllerName, spec, syncFunction);
 	}
 
-	prSetupSpec{
-		spec = ControlSpec(0, 1023, step: 1, default: 512);
+	*prDefaultSpec{
+		^ControlSpec(0, 1023, step: 1, default: 512);
 	}
 
 	prSetupResponderAndSyncFunc{
@@ -57,7 +57,7 @@ MIDIDeviceComponent14BitCC : MIDIDeviceComponent {
 	}
 
 	valueNormalized{
-		^this.value.linlin(0, 1023, 0.0, 1.0); //FIXME, this is not really 14 bit, but in most cases its 10bits
+		^spec.unmap(this.value);
 	}
 
 }
