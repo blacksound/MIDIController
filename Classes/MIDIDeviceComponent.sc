@@ -2,6 +2,7 @@ MIDIDeviceComponent {
 	var <value;
 	var <responder;
 	var <>syncFunction;
+	var <>syncCacheValue;
 	var <chan;
 	var <number;
 	var <spec;
@@ -13,7 +14,7 @@ MIDIDeviceComponent {
 	var <name;
 	var <argTemplate;
 
-	*create{arg midiIn, midiOut, chan, number, msgType, argTemplate, name, controllerName;
+	*create{arg midiIn, midiOut, chan, number, msgType, argTemplate, name, controllerName, spec, syncFunction;
 		var newObj, componentClass;
 		componentClass = switch(msgType, 
 			\control14, MIDIDeviceComponent14BitCC,
@@ -23,16 +24,16 @@ MIDIDeviceComponent {
 			this
 		);
 		newObj = componentClass.new(
-			midiIn, midiOut, chan, number, msgType, argTemplate, name, controllerName
+			midiIn, midiOut, chan, number, msgType, argTemplate, name, controllerName, spec, syncFunction
 		);
 		^newObj;
 	}
 
-	*new{arg midiIn, midiOut, chan, number, msgType = \control, argTemplate, name, controllerName;
-		^super.new.init(midiIn, midiOut, chan, number, msgType, argTemplate, name, controllerName);
+	*new{arg midiIn, midiOut, chan, number, msgType = \control, argTemplate, name, controllerName, spec, syncFunction;
+		^super.new.init(midiIn, midiOut, chan, number, msgType, argTemplate, name, controllerName, spec, syncFunction);
 	}
 
-	init{arg midiIn_, midiOut_, chan_, number_, msgType_, argTemplate_, name_, controllerName_, syncFunc_;
+	init{arg midiIn_, midiOut_, chan_, number_, msgType_, argTemplate_, name_, controllerName_, spec_, syncFunction_;
 		midiIn = midiIn_;
 		midiOut = midiOut_;
 		chan = chan_;
@@ -41,9 +42,13 @@ MIDIDeviceComponent {
 		name = name_;
 		controllerName = controllerName_;
 		value = 0;
-		syncFunction = syncFunc_;
+		syncFunction = syncFunction_;
 		argTemplate = argTemplate_;
-		this.prSetupSpec;
+		if(spec_.isNil, {
+			spec = this.class.prDefaultSpec;
+		}, {
+			spec = spec_;
+		});
 		this.prSetupResponderAndSyncFunc;
 	}
 
@@ -57,8 +62,13 @@ MIDIDeviceComponent {
 		responder.clear;
 	}
 
-	prSetupSpec{
-		spec = \midi.asSpec;
+	*prDefaultSpec{
+		^\midi.asSpec;
+	}
+
+	spec_{|sp|
+		spec = sp;
+		this.changed(\spec);
 	}
 
 	prSetupResponderAndSyncFunc{
@@ -72,6 +82,7 @@ MIDIDeviceComponent {
 				\control, {
 					{arg comp;
 						fork {
+							syncCacheValue = value;
 							midiOut.control(chan, number, value);
 						};
 					};
@@ -79,6 +90,7 @@ MIDIDeviceComponent {
 				\noteOn, {
 					{arg comp;
 						fork {
+							syncCacheValue = value;
 							midiOut.noteOn(chan, number, value);
 						};
 					}
@@ -86,6 +98,7 @@ MIDIDeviceComponent {
 				\noteOff, {
 					{arg comp;
 						fork {
+							syncCacheValue = value;
 							midiOut.noteOff(chan, number, value);
 						};
 					}
@@ -95,7 +108,7 @@ MIDIDeviceComponent {
 	}
 
 	valueNormalized{
-		^this.value.linlin(0, 127, 0.0, 1.0);
+		^spec.unmap(this.value);
 	}
 
 	value_{arg val;

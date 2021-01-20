@@ -47,24 +47,23 @@ MIDIDevice {
 					number = i + 1;
 				});
 				compName = (key ++ "." ++ number).asSymbol;
-				newComp = MIDIDeviceComponent.create(
-					midiIn, midiOut,
-					mapping[\chan],
-					mapping[\number],
-					mapping[\msgType] ? \control,
-					mapping[\argTemplate],
-					compName,
-					name
+				this.addComponent(
+					compName: compName,
+					chan: mapping[\chan],
+					number: mapping[\number],
+					msgType: mapping[\msgType],
+					argTemplate: mapping[\argTemplate],
+					spec: mapping[\spec],
+					syncFunction: mapping[\syncFunction]
 				);
-				components.put(compName, newComp);
 			};
 		});
 	}
 
-	addComponent{arg compName, chan, number, msgType = \control, argTemplate;
+	addComponent{arg compName, chan, number, msgType = \control, argTemplate, spec, syncFunction;
 		var newComp;
 		newComp = MIDIDeviceComponent.create(
-			midiIn, midiOut, chan, number, msgType, argTemplate, compName, name
+			midiIn, midiOut, chan, number, msgType, argTemplate, compName, name, spec, syncFunction
 		);
 		components.put(compName, newComp);
 	}
