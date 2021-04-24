@@ -81,27 +81,26 @@ MIDIDeviceComponent {
 			syncFunction = switch(msgType,
 				\control, {
 					{arg comp;
-						forkIfNeeded {
+						// forkIfNeeded {
 							syncCacheValue = value;
-							"Default sync function".postln;
 							midiOut.control(chan, number, value);
-						};
+						// };
 					};
 				},
 				\noteOn, {
 					{arg comp;
-						forkIfNeeded {
+						// forkIfNeeded {
 							syncCacheValue = value;
 							midiOut.noteOn(chan, number, value);
-						};
+						// };
 					}
 				},
 				\noteOff, {
 					{arg comp;
-						forkIfNeeded {
+						// forkIfNeeded {
 							syncCacheValue = value;
 							midiOut.noteOff(chan, number, value);
-						};
+						// };
 					}
 				}
 			);

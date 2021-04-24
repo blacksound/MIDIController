@@ -45,10 +45,10 @@ MIDIDeviceComponent14BitCC : MIDIDeviceComponent {
 		}, loNumber, chan, midiIn.uid);
 
 		syncFunction = {arg comp;
-			fork {
+			// forkIfNeeded {
 				midiOut.control(chan, number, value >> 7);
 				midiOut.control(chan, loNumber, value % 128);
-			};
+			// };
 		};
 	}
 
