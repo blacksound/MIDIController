@@ -1,5 +1,6 @@
 MIDIDevice {
 	var <midiIn, <midiOut;//temp getters
+	var sourceIndex, destinationIndex;
 	var <components;
 	var <name;
 
@@ -21,6 +22,7 @@ MIDIDevice {
 			});
 			if(outIndex.notNil, {
 				midiOut.connect(outIndex);
+				destinationIndex = outIndex;
 			}, {
 				"Could not connect MIDIOut to virtual destination: %".format(
 					midiOut
@@ -32,6 +34,7 @@ MIDIDevice {
 			});
 			if(inIndex.notNil, {
 				MIDIIn.connect(inIndex, MIDIClient.sources[inIndex]);
+				sourceIndex = inIndex;
 			}, {
 				"Could not connect MIDIIn to virtual source: %".format(
 					midiOut
@@ -47,7 +50,15 @@ MIDIDevice {
 	free{
 		components.keysValuesDo({|compKey, comp|
 			comp.free;
-		})
+		});
+		if(thisProcess.platform.name == \linux, {
+			if(sourceIndex.notNil, {
+				MIDIIn.disconnect(sourceIndex, MIDIClient.sources[sourceIndex]);
+			});
+			if(destinationIndex.notNil, {
+				MIDIOut.disconnect(destinationIndex, MIDIClient.destinations[destinationIndex]);
+			});
+		});
 	}
 
 	setMappings{arg mappingsDict;
