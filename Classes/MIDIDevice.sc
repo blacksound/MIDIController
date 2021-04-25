@@ -10,22 +10,35 @@ MIDIDevice {
 	init{arg inDeviceName, inPortName, outDeviceName, outPortName, name_;
 		if(MIDIClient.initialized.not, {
 			MIDIClient.init;
-			MIDIIn.connectAll;
 		});
 		midiIn = MIDIIn.findPort(inDeviceName, inPortName);
 		midiOut = MIDIOut.newByName(outDeviceName, outPortName);
 		if(thisProcess.platform.name == \linux, {
-			var outIndex;
-			outIndex = MIDIClient.destinations.detectIndex({|source|
-				source.uid == midiOut.uid;
+			var outIndex, inIndex;
+			//connect MIDI out
+			outIndex = MIDIClient.destinations.detectIndex({|destination|
+				destination.uid == midiOut.uid;
 			});
 			if(outIndex.notNil, {
 				midiOut.connect(outIndex);
 			}, {
-				"Could not connect MIDIOut to virtual source: %".format(
+				"Could not connect MIDIOut to virtual destination: %".format(
 					midiOut
 				).warn;
 			});
+			//Connect MIDI in
+			inIndex = MIDIClient.sources.detectIndex({|source|
+				source.uid == midiIn.uid;
+			});
+			if(inIndex.notNil, {
+				MIDIIn.connect(inIndex, MIDIClient.sources[inIndex]);
+			}, {
+				"Could not connect MIDIIn to virtual source: %".format(
+					midiOut
+				).warn;
+			});
+		}, {
+			MIDIIn.connectAll;
 		});
 		name = name_;
 		components = ();
